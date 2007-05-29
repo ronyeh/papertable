@@ -53,6 +53,17 @@ public class Table {
 	}
 	
 	/**
+	 * Brings a page to the top in hte draw stack
+	 * @param p
+	 */
+	public void bringToTop(Page p) {
+		pages.remove(p);
+		pages.add(p);
+		PageEvent e = new PageEvent(p);
+		for (TableListener l : listeners)
+			l.pageAdded(e);
+	}
+	/**
 	 * Returns the pages that intersect with the given rectangle
 	 * @param r the rectangle to find intersections with
 	 * @return the list of pages that qualify
@@ -128,8 +139,6 @@ public class Table {
 		for (TableListener l : listeners)
 			l.pageChanged(e);
 	}
-	
-	
 	
 	
 }

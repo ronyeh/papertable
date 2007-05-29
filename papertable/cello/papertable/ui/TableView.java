@@ -4,16 +4,16 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.geom.Rectangle2D;
-import java.util.List;
+import java.awt.RenderingHints;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JComponent;
 
+import cello.papertable.event.InputListener;
 import cello.papertable.event.PageEvent;
+import cello.papertable.event.PointEvent;
 import cello.papertable.event.TableListener;
-import cello.papertable.model.Page;
 import cello.papertable.model.Table;
 
 /**
@@ -21,8 +21,8 @@ import cello.papertable.model.Table;
  * 
  * @author Marcello
  */
-public class TableView extends JComponent implements TableListener, 
-MouseListener {
+public class TableView extends JComponent 
+	implements TableListener, InputListener {
 
 	/**
 	 * 
@@ -39,9 +39,15 @@ MouseListener {
 	public TableView(Table table) {
 		this.table = table;
 		table.addTableListener(this);
-		addMouseListener(this);
 		setBackground(new Color(0xFF000000));
 		setOpaque(true);
+	}
+	
+	/**
+	 * @return the table
+	 */
+	public Table getTable() {
+		return table;
 	}
 
 	/**
@@ -53,7 +59,11 @@ MouseListener {
 		g.setColor(Color.BLACK);
 		g.fillRect(0,0,getWidth(),getHeight());
 		Graphics2D g2d = (Graphics2D)g;
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+								RenderingHints.VALUE_ANTIALIAS_ON);
 		table.draw(g2d);
+		for (TableInputHandler handler : inputHandlers.values())
+			handler.paint(g2d);
 	}
 
 	/**
@@ -69,42 +79,38 @@ MouseListener {
 	 * @param p the page event
 	 */
 	public void pageChanged(PageEvent p) {
-		Rectangle r = p.getPage().getShape().getBounds();
+		Rectangle r = p.getBounds2D().getBounds();
 		r.width+=2;
 		r.height+=2;
 		repaint(r);
 	}
-
-	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void mousePressed(MouseEvent e) {
-		List<Page> pages = table.getPages(
-				new Rectangle2D.Float(e.getX(), e.getY(), 1, 1));
-		for (Page p : pages) {
-			p.setActive(true);
-		}
-		
-	}
-
-	public void mouseReleased(MouseEvent e) {
-		List<Page> pages = table.getPages();
-		for (Page p : pages)
-			p.setActive(false);
-		
+	
+	/**
+	 * 
+	 */
+	@Override
+	public void repaint(final Rectangle r) {
+		super.repaint(r.x-2, r.y-2, r.width+4, r.height+4);
 	}
 	
+	private Map<Object,TableInputHandler> inputHandlers 
+									= new HashMap<Object,TableInputHandler>();
+
+	/**
+	 * 
+	 * @param source
+	 * @param handler
+	 */
+	public void setHandler(Object source, TableInputHandler handler) {
+		inputHandlers.put(source,handler);
+		handler.setTableView(this);
+	}
 	
+	/** @see InputListener#inputPoint(PointEvent) */
+	public void inputPoint(PointEvent e) {
+		TableInputHandler handler = inputHandlers.get(e.getSource());
+		
+		if (handler!=null)
+			handler.inputPoint(e);
+	}
 }

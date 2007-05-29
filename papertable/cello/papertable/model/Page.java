@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 
 import cello.papertable.event.PageEvent;
@@ -27,6 +26,7 @@ public class Page {
 	private Table table = null;
 	
 	private AffineTransform rotateTransform, translateTransform, transform;
+	private Rectangle2D lastBounds = null;
 	
 	/**
 	 * Constructs a new Page object at a particular position
@@ -60,23 +60,45 @@ public class Page {
 	public Shape getTransformedShape(Shape s) {
 		return transform.createTransformedShape(s); 
 	}
+	
+	/**
+	 * @return the current transformation
+	 */
+	public AffineTransform getTransformation() {
+		return transform;
+	}
 
 	/**
 	 * @param g drawing surface
 	 * 
 	 */
 	public void draw(Graphics2D g) {
+		drawContents(g);
+		drawOverlay(g);
+	}
+	
+	/**
+	 * 
+	 * @param g
+	 */
+	protected void drawContents(Graphics2D g) {
 		Shape s = getShape();
 		
 		g.setColor(Color.GRAY);
 		g.fill(s);
-		g.setColor(active ? Color.RED : Color.WHITE);
-		// rectangle
-		g.draw(s);
-		// top left to bottom right
-		g.draw(getTransformedShape(new Line2D.Float(0,0,width,height)));
-		// top right to bottom left
-		g.draw(getTransformedShape(new Line2D.Float(width,0,0,height)));
+		
+	}
+	/**
+	 * 
+	 * @param g
+	 */
+	protected void drawOverlay(Graphics2D g) {
+		Shape s = getShape();
+		
+		if (active) {
+			g.setColor(Color.WHITE);
+			g.draw(s);
+		}
 		
 	}
 
@@ -152,11 +174,19 @@ public class Page {
 		updateTransform();
 	}
 	
+	/**
+	 * Translate the page by dx/dy
+	 * @param dx
+	 * @param dy
+	 */
+	public void translate(float dx, float dy) {
+		setLocation(getX()+dx,getY()+dy);
+	}
+	
 	private void updateTransform() {
 		transform = (AffineTransform)translateTransform.clone();
-		transform.concatenate(rotateTransform); 
-		if (table!=null)
-			table.invokePageChanged(new PageEvent(this));
+		transform.concatenate(rotateTransform);
+		invokePageChanged();
 	}
 
 
@@ -167,8 +197,8 @@ public class Page {
 	 * @param y
 	 */
 	public void setAnchor(float x, float y) {
-		this.anchorX = x;
-		this.anchorY = y;
+		this.anchorX = x * getWidth();
+		this.anchorY = y * getHeight();
 		updateRotation();
 	}
 	
@@ -179,13 +209,6 @@ public class Page {
 		return anchorX;
 	}
 
-	/**
-	 * @param anchorX the anchorx to set
-	 */
-	public void setAnchorX(float anchorX) {
-		this.anchorX = anchorX;
-		updateRotation();
-	}
 
 	/**
 	 * @return the anchory
@@ -193,15 +216,6 @@ public class Page {
 	public float getAnchorY() {
 		return anchorY;
 	}
-
-	/**
-	 * @param anchorY the anchory to set
-	 */
-	public void setAnchorY(float anchorY) {
-		this.anchorY = anchorY;
-		updateRotation();
-	}
-
 	/**
 	 * @return the rotation
 	 */
@@ -236,8 +250,22 @@ public class Page {
 	 */
 	public void setActive(boolean active) {
 		this.active = active;
-		if (table!=null)
-			table.invokePageChanged(new PageEvent(this));
+		invokePageChanged();
+	}
+
+	private void invokePageChanged() {
+		if (table==null)
+			return;
+
+		Rectangle2D newBounds = getShape().getBounds2D();
+		
+		if (lastBounds!=null)
+			lastBounds.add(newBounds);
+		else
+			lastBounds = newBounds; 
+
+		table.invokePageChanged(new PageEvent(this,lastBounds));
+		lastBounds = newBounds;
 	}
 
 	/**
