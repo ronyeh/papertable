@@ -1,5 +1,7 @@
 package cello.papertable.event;
 
+import java.awt.geom.Rectangle2D;
+
 import cello.papertable.model.Page;
 
 /**
@@ -10,13 +12,24 @@ import cello.papertable.model.Page;
 public class PageEvent {
 	
 	private Page page;
+	private Rectangle2D bounds;
 	
 	/**
 	 * 
 	 * @param page
 	 */
 	public PageEvent(Page page) {
+		this(page,page.getShape().getBounds2D());
+	}
+
+	/**
+	 * 
+	 * @param page 
+	 * @param bounds the rectangle affected by this event 
+	 */
+	public PageEvent(Page page, Rectangle2D bounds) {
 		this.page = page;
+		this.bounds = bounds;
 	}
 
 	/**
@@ -26,11 +39,12 @@ public class PageEvent {
 		return page;
 	}
 
+
 	/**
-	 * @param page the page to set
+	 * @return the rectangle affected by this event
 	 */
-	public void setPage(Page page) {
-		this.page = page;
+	public Rectangle2D getBounds2D() {
+		return bounds;
 	}
 
 }

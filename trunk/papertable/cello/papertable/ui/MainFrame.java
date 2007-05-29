@@ -1,22 +1,25 @@
 package cello.papertable.ui;
 
 import java.awt.BorderLayout;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
-import cello.papertable.model.Page;
+import cello.papertable.event.InputAggregator;
+import cello.papertable.event.connect.MouseInputConnector;
+import cello.papertable.event.connect.PenInputConnector;
+import cello.papertable.model.PhotoPage;
 import cello.papertable.model.Table;
-import edu.stanford.hci.r3.PaperToolkit;
-import edu.stanford.hci.r3.application.Application;
 import edu.stanford.hci.r3.pen.Pen;
-import edu.stanford.hci.r3.pen.PenSample;
-import edu.stanford.hci.r3.pen.streaming.listeners.PenListener;
 
 /**
  * Main GUI window
  * @author Marcello
  */
-public class MainFrame extends JFrame implements PenListener {
+public class MainFrame extends JFrame {
 	/**
 	 * generated serial id
 	 */
@@ -24,9 +27,8 @@ public class MainFrame extends JFrame implements PenListener {
 	
 	private Table table; 
 	private TableView tableview;
+	private InputAggregator aggregator;
 
-	private boolean calibrated = false;
-	private double minX,minY,maxX,maxY; 
 	
 	/**
 	 * Constructs a new MainFrame
@@ -34,49 +36,49 @@ public class MainFrame extends JFrame implements PenListener {
 	 */
 	public MainFrame() {
 		super("Papertable");
+		setUndecorated(true);
 		setSize(1024,768);
 		
 		table = new Table(1024,768);
+		aggregator = new InputAggregator();
 		
-		table.add(new Page(10,10,300,300));
+		float x = 10; 
+		
+		File folder = new File("photos");
+		for (File f : folder.listFiles())
+			if (f.isFile() && f.canRead()) {
+				try {
+					BufferedImage img = ImageIO.read(f);
+					PhotoPage pp = new PhotoPage(img,x,x,300);
+					pp.setAnchor(0.5f, 0.5f);
+					pp.setRotation((float)Math.PI/8);
+					
+					table.add(pp);
+					x += 150;
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				}
+			}
+		
+		
 		tableview = new TableView(table);
-
 
 		Pen p = new Pen("Local Pen");
 		p.startLiveMode();
-		p.addLivePenListener(this);
+		
+		MouseInputConnector mouseinput = new MouseInputConnector(tableview, aggregator);
+		PenInputConnector peninput = new PenInputConnector(p, aggregator);
+		
+		tableview.setHandler(mouseinput, new TableManipulateHandler());
+		tableview.setHandler(peninput, new TableStrokeHandler());
+
+		aggregator.addInputListener(tableview);
+		
 		
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(tableview,BorderLayout.CENTER);
 		
 		getContentPane().invalidate();
-	}
-
-	public void penDown(PenSample sample) {
-		if (!calibrated) {
-			minX = maxX = sample.getX();
-			minY = maxY = sample.getY();
-		}
-		sample(sample);
-	}
-
-	public void penUp(PenSample sample) {
-		sample(sample);
-		calibrated = true;
-	}
-
-	public void sample(PenSample sample) {
-		if (!calibrated) {
-			System.out.println("sample="+sample);
-			minX = Math.min(minX, sample.getX());
-			maxX = Math.max(maxX, sample.getX());
-			minY = Math.min(minY, sample.getY());
-			maxY = Math.max(maxY, sample.getY());
-		} else {
-			double scaledX = (sample.getX() - minX) / (maxX-minX);
-			double scaledY = (sample.getY() - minY) / (maxY-minY);
-			System.out.println("sample = "+scaledX+","+scaledY);
-		}
 	}
 
 }
