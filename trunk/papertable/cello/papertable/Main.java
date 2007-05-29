@@ -1,5 +1,7 @@
 package cello.papertable;
 
+import javax.swing.JFrame;
+
 import cello.papertable.ui.MainFrame;
 
 /**
@@ -16,6 +18,7 @@ public class Main {
 	 */
 	public static void main(String args[]) {
 		MainFrame m = new MainFrame();
+		m.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		m.setVisible(true);
 	}
 }
