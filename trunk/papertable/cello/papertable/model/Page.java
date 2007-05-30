@@ -24,17 +24,12 @@ import cello.papertable.event.PageEvent;
  *
  */
 public class Page {
-	
-	private float x, y;
-	private float anchorX, anchorY;
-	private float width, height;
-	private float rotation;
-	
+	private float width,height;
 	private boolean active = false;
 	
 	private Table table = null;
 	
-	private AffineTransform rotateTransform, translateTransform, transform;
+	private AffineTransform transform;
 	private Rectangle2D lastBounds = null;
 	
 	private Map<Object,Point2D> constraints = new HashMap<Object,Point2D>();
@@ -51,12 +46,9 @@ public class Page {
 	 * @param height
 	 */
 	public Page(float x, float y, float width, float height) {
-		translateTransform = AffineTransform.getTranslateInstance(0, 0);
-		rotateTransform = AffineTransform.getTranslateInstance(0, 0);
-		setRotation(0);
-		setLocation(x,y);
-		setWidth(width);
-		setHeight(height);
+		transform = AffineTransform.getTranslateInstance(x,y);
+		this.width = width;
+		this.height = height;
 	}
 	
 	/**
@@ -185,14 +177,6 @@ public class Page {
 	}
 
 	/**
-	 * Set height of page
-	 * @param height
-	 */
-	public void setHeight(float height) {
-		this.height = height;
-	}
-
-	/**
 	 * @return width of page
 	 */
 	public float getWidth() {
@@ -200,53 +184,12 @@ public class Page {
 	}
 
 	/**
-	 * Set width of page
-	 * @param width
+	 * @param theta 
+	 * @param anchorx 
+	 * @param anchory 
 	 */
-	public void setWidth(float width) {
-		this.width = width;
-	}
-
-	/**
-	 * @return x position
-	 */
-	public float getX() {
-		return x;
-	}
-
-	/**
-	 * Set x position
-	 * @param x
-	 */
-	public void setX(float x) {
-		setLocation(x,y);
-	}
-
-	/**
-	 * @return y position
-	 */
-	public float getY() {
-		return y;
-	}
-
-	/**
-	 * 
-	 * @param y
-	 */
-	public void setY(float y) {
-		setLocation(x,y);
-	}
-	
-	/**
-	 * Set the current location
-	 * @param x
-	 * @param y
-	 */
-	public void setLocation(float x, float y) {
-		this.x = x;
-		this.y = y;
-		translateTransform = AffineTransform.getTranslateInstance(x,y);
-		updateTransform();
+	public void rotate(double theta, double anchorx, double anchory) {
+		transform(AffineTransform.getRotateInstance(theta, anchorx, anchory));
 	}
 	
 	/**
@@ -254,65 +197,32 @@ public class Page {
 	 * @param dx
 	 * @param dy
 	 */
-	public void translate(float dx, float dy) {
-		setLocation(getX()+dx,getY()+dy);
+	public void translate(double dx, double dy) {
+		transform(AffineTransform.getTranslateInstance(dx,dy));
 	}
 	
-	private void updateTransform() {
-		transform = (AffineTransform)translateTransform.clone();
-		transform.concatenate(rotateTransform);
+	/**
+	 * Scales the page around a point
+	 * @param scale
+	 * @param anchorx
+	 * @param anchory
+	 */
+	public void scale(double scale, double anchorx, double anchory) {
+		translate(-anchorx,-anchory);
+		transform(AffineTransform.getScaleInstance(scale, scale));
+		translate(anchorx,anchory);
+	}
+	
+	/**
+	 * Arbitrary transformation
+	 * @param at
+	 */
+	private void transform(AffineTransform at) {
+		transform.preConcatenate(at);
 		invokePageChanged();
 	}
 
 
-	
-	/**
-	 * Sets the anchor
-	 * @param x
-	 * @param y
-	 */
-	public void setAnchor(float x, float y) {
-		this.anchorX = x * getWidth();
-		this.anchorY = y * getHeight();
-		updateRotation();
-	}
-	
-	/**
-	 * @return the anchorx
-	 */
-	public float getAnchorX() {
-		return anchorX;
-	}
-
-
-	/**
-	 * @return the anchory
-	 */
-	public float getAnchorY() {
-		return anchorY;
-	}
-	/**
-	 * @return the rotation
-	 */
-	public float getRotation() {
-		return rotation;
-	}
-
-	/**
-	 * @param rotation the rotation to set
-	 */
-	public void setRotation(float rotation) {
-		this.rotation = rotation;
-		updateRotation();
-	}
-	
-	private void updateRotation() {
-		rotateTransform = 
-			AffineTransform.getRotateInstance(rotation, anchorX, anchorY);
-		updateTransform(); 
-		
-	}
-	
 	/**
 	 * Adds a constraint on movement for this object
 	 * @param source
@@ -321,7 +231,7 @@ public class Page {
 	public void addConstraint(Object source, Point2D constraint) {
 		if (constraints.size()>=2)
 			return;
-		constraints.put(source,reverseTransform(constraint));
+		constraints.put(source,constraint);
 	}
 	
 	/**
@@ -340,14 +250,36 @@ public class Page {
 	public void moveConstraint(Object source, Point2D pos) {
 		if (!constraints.containsKey(source))
 			throw new IllegalArgumentException("source does not exist");
-		Point2D newPos = reverseTransform(pos);
+		
 		switch (constraints.size()) {
 			case 1:
 				Point2D oldPos = constraints.get(source);
-				translate((float)(newPos.getX()-oldPos.getX()), 
-						  (float)(newPos.getY()-oldPos.getY()));
+				translate((float)(pos.getX()-oldPos.getX()), 
+						  (float)(pos.getY()-oldPos.getY()));
+				constraints.put(source, pos);
 				break;
 			case 2:
+				Point2D pt[] = constraints.values().toArray(new Point2D[0]);
+				double oldx = (pt[0].getX()+pt[1].getX())/2;
+				double oldy = (pt[0].getY()+pt[1].getY())/2;
+				double olddx = pt[1].getX()-pt[0].getX();
+				double olddy = pt[1].getY()-pt[0].getY();
+				double oldtheta = Math.atan2(olddy, olddx);
+				double oldr = Math.hypot(olddx, olddy);
+				
+				constraints.put(source, pos);
+				Point2D pt2[] = constraints.values().toArray(new Point2D[0]);
+				double newx = (pt2[0].getX()+pt2[1].getX())/2;
+				double newy = (pt2[0].getY()+pt2[1].getY())/2;
+				double newdx = pt2[1].getX()-pt2[0].getX();
+				double newdy = pt2[1].getY()-pt2[0].getY();
+				double newtheta = Math.atan2(newdy, newdx);
+				double newr = Math.hypot(newdx, newdy);
+				
+
+				rotate(newtheta-oldtheta,newx,newy);
+				translate(newx-oldx, newy-oldy);
+				scale(newr/oldr,newx,newy);
 				
 				break;
 		}
