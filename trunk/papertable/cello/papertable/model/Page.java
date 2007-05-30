@@ -1,10 +1,19 @@
 package cello.papertable.model;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import cello.papertable.event.PageEvent;
 
@@ -28,6 +37,11 @@ public class Page {
 	private AffineTransform rotateTransform, translateTransform, transform;
 	private Rectangle2D lastBounds = null;
 	
+	private Map<Object,Point2D> constraints = new HashMap<Object,Point2D>();
+	
+	private List<Path2D> annotations = new LinkedList<Path2D>();
+	private Path2D activeStroke = null;
+	
 	/**
 	 * Constructs a new Page object at a particular position
 	 * 
@@ -46,10 +60,49 @@ public class Page {
 	}
 	
 	/**
+	 * Starts a new annotation stroke 
+	 * @param sx
+	 * @param sy
+	 */
+	public void startStroke(float sx, float sy) {
+		endStroke();
+		activeStroke = new Path2D.Float();
+		Point2D transformed = reverseTransform(new Point2D.Float(sx,sy));
+		activeStroke.moveTo(transformed.getX(), transformed.getY());
+	}
+	/**
+	 * Adds to a started annotation stroke
+	 * @param sx
+	 * @param sy
+	 */
+	public void addStroke(float sx, float sy) {
+		Point2D transformed = reverseTransform(new Point2D.Float(sx,sy));
+		activeStroke.lineTo(transformed.getX(), transformed.getY());
+	}
+	/**
+	 * Completes an existing annotation stroke
+	 *
+	 */
+	public void endStroke() {
+		if (activeStroke!=null)
+			annotations.add(activeStroke);
+		activeStroke = null;
+	}
+	
+	/**
 	 * @return the transformed shape in table coordinates
 	 */
-	public Shape getShape() {
-		return getTransformedShape(new Rectangle2D.Float(0,0,width,height));
+	public Shape getOriginalShape() {
+		return new Rectangle2D.Float(0,0,width,height);
+	}
+	
+	/**
+	 * Transforms a shape based on 
+	 * @param s  the shape
+	 * @return the transformed shape
+	 */
+	public Shape getTransformedShape() {
+		return getTransformedShape(getOriginalShape()); 
 	}
 	
 	/**
@@ -72,17 +125,23 @@ public class Page {
 	 * @param g drawing surface
 	 * 
 	 */
-	public void draw(Graphics2D g) {
-		drawContents(g);
-		drawOverlay(g);
+	public void paint(Graphics2D g) {
+
+	    AffineTransform saveXform = g.getTransform();
+	    g.setTransform(getTransformation());
+	    
+		paintContents(g);
+		paintOverlay(g);
+
+		g.setTransform(saveXform);
 	}
 	
 	/**
 	 * 
 	 * @param g
 	 */
-	protected void drawContents(Graphics2D g) {
-		Shape s = getShape();
+	protected void paintContents(Graphics2D g) {
+		Shape s = getOriginalShape();
 		
 		g.setColor(Color.GRAY);
 		g.fill(s);
@@ -92,10 +151,26 @@ public class Page {
 	 * 
 	 * @param g
 	 */
-	protected void drawOverlay(Graphics2D g) {
-		Shape s = getShape();
+	protected void paintOverlay(Graphics2D g) {
 		
+		Stroke oldStroke = g.getStroke();
+		
+		g.setStroke(new BasicStroke(4));
+		g.setColor(Color.BLACK);
+		for (Shape s : annotations)
+			g.draw(s);
+		if (activeStroke!=null)
+			g.draw(activeStroke);
+		g.setStroke(oldStroke);
+
+		g.setColor(Color.WHITE);
+		for (Shape s : annotations)
+			g.draw(s);
+		if (activeStroke!=null)
+			g.draw(activeStroke);
+			
 		if (active) {
+			Shape s = getOriginalShape();
 			g.setColor(Color.WHITE);
 			g.draw(s);
 		}
@@ -237,7 +312,65 @@ public class Page {
 		updateTransform(); 
 		
 	}
+	
+	/**
+	 * Adds a constraint on movement for this object
+	 * @param source
+	 * @param constraint
+	 */
+	public void addConstraint(Object source, Point2D constraint) {
+		if (constraints.size()>=2)
+			return;
+		constraints.put(source,reverseTransform(constraint));
+	}
+	
+	/**
+	 * Removes an existing constraint
+	 * @param source
+	 */
+	public void removeConstraint(Object source) {
+		constraints.remove(source);
+	}
+	/**
+	 * Moves an existing constraint to a new point transforming the underlying 
+	 * object
+	 * @param source
+	 * @param pos
+	 */
+	public void moveConstraint(Object source, Point2D pos) {
+		if (!constraints.containsKey(source))
+			throw new IllegalArgumentException("source does not exist");
+		Point2D newPos = reverseTransform(pos);
+		if (constraints.size() == 1) {
+			Point2D oldPos = constraints.get(source);
+			translate((float)(newPos.getX()-oldPos.getX()), 
+					  (float)(newPos.getY()-oldPos.getY()));
+		}
+	}
+	/**
+	 * Moves an existing constraint to a new point
+	 * @param source
+	 * @param constraint
+	 */
+	public void updateConstraint(Object source, Point2D constraint) {
+		if (!constraints.containsKey(source))
+			throw new IllegalArgumentException("source does not exist");
+		constraints.put(source,reverseTransform(constraint));
+	}
 
+	/**
+	 * Transforms a pointin table space to page space
+	 * @param source
+	 * @return the transformed point
+	 */
+	private Point2D reverseTransform(Point2D source) {
+		try {
+			return transform.inverseTransform(source,null);
+		} catch (NoninvertibleTransformException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	/**
 	 * @return the active
 	 */
@@ -257,7 +390,7 @@ public class Page {
 		if (table==null)
 			return;
 
-		Rectangle2D newBounds = getShape().getBounds2D();
+		Rectangle2D newBounds = getTransformedShape().getBounds2D();
 		
 		if (lastBounds!=null)
 			lastBounds.add(newBounds);
@@ -280,6 +413,13 @@ public class Page {
 	 */
 	public void setTable(Table table) {
 		this.table = table;
+	}
+
+	/**
+	 * @return the bounds of the transformed shape
+	 */
+	public Rectangle2D getBounds2D() {
+		return getTransformedShape().getBounds2D();
 	}
 
 }

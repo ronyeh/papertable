@@ -1,5 +1,6 @@
 package cello.papertable.ui;
 
+import java.awt.geom.Point2D;
 import java.util.List;
 
 import cello.papertable.event.PointEvent;
@@ -14,7 +15,6 @@ import cello.papertable.model.Page;
 public class TableManipulateHandler extends TableInputHandler {
 	
 	private Page activePage = null;
-	private float lastX,lastY;
 	
 	/**
 	 * @see TableInputHandler#inputPoint(float, float, Page, List, PointEvent)
@@ -31,22 +31,25 @@ public class TableManipulateHandler extends TableInputHandler {
 				if (activePage != null) {
 					activePage.setActive(true);
 					getView().getTable().bringToTop(activePage);
+					activePage.addConstraint(this, new Point2D.Float(x,y));
 				}
 				
 				break;
 			case RELEASE:
-				if (activePage != null)
+				if (activePage != null) {
 					activePage.setActive(false);
+					activePage.removeConstraint(this);
+				}
 				break;
 			case DRAG:
-				if (activePage != null)
-					activePage.translate(x - lastX, y - lastY);
+				if (activePage != null) {
+					activePage.moveConstraint(this, 
+							new Point2D.Float(x,y));
+				}
 				break;
 			default:
 				break;
 		}
-		lastX = x;
-		lastY = y;
 
 	}
 

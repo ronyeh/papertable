@@ -1,7 +1,6 @@
 package cello.papertable.model;
 
 import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 /**
@@ -26,17 +25,11 @@ public class PhotoPage extends Page {
 	}
 
 	/**
-	 * @see Page#draw(Graphics2D)
+	 * @see Page#paint(Graphics2D)
 	 */
 	@Override
-	public void drawContents(Graphics2D g) {
-	    AffineTransform saveXform = g.getTransform();
-	    
-	    g.setTransform(getTransformation());
-
+	public void paintContents(Graphics2D g) {
 		g.drawImage(image, 0,0, (int)getWidth(), (int)getHeight(),null);
-		
-		g.setTransform(saveXform);
 	}
 	
 

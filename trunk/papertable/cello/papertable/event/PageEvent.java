@@ -19,7 +19,7 @@ public class PageEvent {
 	 * @param page
 	 */
 	public PageEvent(Page page) {
-		this(page,page.getShape().getBounds2D());
+		this(page,page.getBounds2D());
 	}
 
 	/**
