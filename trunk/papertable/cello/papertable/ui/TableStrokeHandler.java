@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -43,9 +44,12 @@ public class TableStrokeHandler extends TableInputHandler {
 				if (page!=null) {
 					add(page);
 					page.startStroke(x,y);
+					page.addConstraint(this, new Point2D.Float(x,y));
 				}
 				break;
 			case RELEASE:
+				if (lastPage!=null)
+					lastPage.removeConstraint(this);
 				System.out.println("released "+(page!=null?"on":"off"));
 				reset();
 				break;
@@ -55,10 +59,14 @@ public class TableStrokeHandler extends TableInputHandler {
 						System.out.println("switched");
 					else
 						System.out.println("dragged "+(page!=null?"on":"off"));
-					if (lastPage!=null)
+					if (lastPage!=null) {
 						lastPage.endStroke();
-					if (page!=null)
+						lastPage.removeConstraint(this);
+					}
+					if (page!=null) {
 						page.startStroke(x,y);
+						page.moveConstraint(this, new Point2D.Float(x,y));
+					}
 				}
 				if (page!=null) {
 					add(page);
@@ -90,7 +98,8 @@ public class TableStrokeHandler extends TableInputHandler {
 		p.setActive(true);
 	}
 	void reset() {
-		getView().repaint(stroke.getBounds());
+		if (stroke!=null)
+			getView().repaint(stroke.getBounds());
 		lastPage = null;
 		stroke = null;
 		for (Page p : pages)

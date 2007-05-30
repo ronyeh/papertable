@@ -1,7 +1,6 @@
 package cello.papertable.ui;
 
 import java.awt.BorderLayout;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +51,7 @@ public class MainFrame extends JFrame {
 					BufferedImage img = ImageIO.read(f);
 					PhotoPage pp = new PhotoPage(img,x,x,300);
 					//pp.rotate((float)Math.PI/8, x+150,x+100);
-					pp.addConstraint(table, new Point2D.Double(x+10,x+10));
+					//pp.addConstraint(table, new Point2D.Double(x+10,x+10));
 					
 					table.add(pp);
 					x += 150;
