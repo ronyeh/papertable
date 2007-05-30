@@ -69,7 +69,7 @@ public class MainFrame extends JFrame {
 		MouseInputConnector mouseinput = new MouseInputConnector(tableview, aggregator);
 		PenInputConnector peninput = new PenInputConnector(p, aggregator);
 		
-		tableview.setHandler(mouseinput, new TableStrokeHandler());
+		tableview.setHandler(mouseinput, new TableManipulateHandler());
 		tableview.setHandler(peninput, new TableStrokeHandler());
 
 		aggregator.addInputListener(tableview);
