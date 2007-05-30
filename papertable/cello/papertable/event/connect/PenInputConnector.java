@@ -38,6 +38,7 @@ public class PenInputConnector implements PenListener {
 			minX = maxX = x;
 			minY = maxY = y;
 			x = y = 0;
+			calibrated=true;
 		} else {
 			if (x<minX) minX = x;
 			if (x>maxX) maxX = x;
@@ -47,6 +48,7 @@ public class PenInputConnector implements PenListener {
 			x = (x - minX) / (maxX-minX);
 			y = (y - minY) / (maxY-minY);
 		}
+		System.out.println("="+x+","+y);
 		return new PointEvent(this,type,x,y);
 	}
 

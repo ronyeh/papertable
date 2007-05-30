@@ -56,7 +56,7 @@ public class Page {
 	 * @param sx
 	 * @param sy
 	 */
-	public void startStroke(float sx, float sy) {
+	public synchronized void startStroke(float sx, float sy) {
 		endStroke();
 		activeStroke = new Path2D.Float();
 		Point2D transformed = reverseTransform(new Point2D.Float(sx,sy));
@@ -67,7 +67,7 @@ public class Page {
 	 * @param sx
 	 * @param sy
 	 */
-	public void addStroke(float sx, float sy) {
+	public synchronized void addStroke(float sx, float sy) {
 		Point2D transformed = reverseTransform(new Point2D.Float(sx,sy));
 		activeStroke.lineTo(transformed.getX(), transformed.getY());
 	}
@@ -75,7 +75,7 @@ public class Page {
 	 * Completes an existing annotation stroke
 	 *
 	 */
-	public void endStroke() {
+	public synchronized void endStroke() {
 		if (activeStroke!=null)
 			annotations.add(activeStroke);
 		activeStroke = null;
@@ -143,7 +143,7 @@ public class Page {
 	 * 
 	 * @param g
 	 */
-	protected void paintOverlay(Graphics2D g) {
+	protected synchronized void paintOverlay(Graphics2D g) {
 		
 		Stroke oldStroke = g.getStroke();
 		
@@ -249,7 +249,7 @@ public class Page {
 	 */
 	public void moveConstraint(Object source, Point2D pos) {
 		if (!constraints.containsKey(source))
-			throw new IllegalArgumentException("source does not exist");
+			return;
 		
 		switch (constraints.size()) {
 			case 1:
@@ -291,7 +291,7 @@ public class Page {
 	 */
 	public void updateConstraint(Object source, Point2D constraint) {
 		if (!constraints.containsKey(source))
-			throw new IllegalArgumentException("source does not exist");
+			return;
 		constraints.put(source,reverseTransform(constraint));
 	}
 
