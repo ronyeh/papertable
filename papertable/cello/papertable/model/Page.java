@@ -341,10 +341,15 @@ public class Page {
 		if (!constraints.containsKey(source))
 			throw new IllegalArgumentException("source does not exist");
 		Point2D newPos = reverseTransform(pos);
-		if (constraints.size() == 1) {
-			Point2D oldPos = constraints.get(source);
-			translate((float)(newPos.getX()-oldPos.getX()), 
-					  (float)(newPos.getY()-oldPos.getY()));
+		switch (constraints.size()) {
+			case 1:
+				Point2D oldPos = constraints.get(source);
+				translate((float)(newPos.getX()-oldPos.getX()), 
+						  (float)(newPos.getY()-oldPos.getY()));
+				break;
+			case 2:
+				
+				break;
 		}
 	}
 	/**
