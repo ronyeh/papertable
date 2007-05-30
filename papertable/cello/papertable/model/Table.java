@@ -37,7 +37,7 @@ public class Table {
 	 */
 	public void draw(Graphics2D g) {
 		for (Page p : pages)
-			p.draw(g);
+			p.paint(g);
 	}
 	
 	/**
@@ -71,7 +71,7 @@ public class Table {
 	public List<Page> getPages(Rectangle2D r) {
 		List<Page> resultPages = new LinkedList<Page>();
 		for (Page p : pages)
-			if (p.getShape().intersects(r))
+			if (p.getTransformedShape().intersects(r))
 				resultPages.add(p);
 		
 		Collections.reverse(resultPages);

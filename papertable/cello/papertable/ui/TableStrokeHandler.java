@@ -40,8 +40,10 @@ public class TableStrokeHandler extends TableInputHandler {
 			case PRESS:
 				System.out.println("started "+(page!=null?"on":"off"));
 				startStroke(x, y);
-				if (page!=null)
+				if (page!=null) {
 					add(page);
+					page.startStroke(x,y);
+				}
 				break;
 			case RELEASE:
 				System.out.println("released "+(page!=null?"on":"off"));
@@ -53,10 +55,15 @@ public class TableStrokeHandler extends TableInputHandler {
 						System.out.println("switched");
 					else
 						System.out.println("dragged "+(page!=null?"on":"off"));
-
+					if (lastPage!=null)
+						lastPage.endStroke();
+					if (page!=null)
+						page.startStroke(x,y);
 				}
-				if (page!=null)
+				if (page!=null) {
 					add(page);
+					page.addStroke(x,y);
+				}
 				addStroke(x,y);
 				
 				break;
