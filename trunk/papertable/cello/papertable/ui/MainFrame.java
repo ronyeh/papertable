@@ -8,9 +8,11 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
+import cello.papertable.dt.TouchDispatcher;
 import cello.papertable.event.InputAggregator;
 import cello.papertable.event.connect.MouseInputConnector;
 import cello.papertable.event.connect.PenInputConnector;
+import cello.papertable.event.connect.TouchInputConnector;
 import cello.papertable.model.PhotoPage;
 import cello.papertable.model.Table;
 import edu.stanford.hci.r3.pen.Pen;
@@ -65,12 +67,17 @@ public class MainFrame extends JFrame {
 
 		Pen p = new Pen("Local Pen");
 		p.startLiveMode();
+
+		TouchDispatcher dispatcher = new TouchDispatcher();
+		dispatcher.start();
 		
 		MouseInputConnector mouseinput = new MouseInputConnector(tableview, aggregator);
 		PenInputConnector peninput = new PenInputConnector(p, aggregator);
+		TouchInputConnector touchinput = new TouchInputConnector(dispatcher, aggregator);
 		
 		tableview.setHandler(mouseinput, new TableManipulateHandler());
 		tableview.setHandler(peninput, new TableStrokeHandler());
+		tableview.setHandler(touchinput, new TableManipulateHandler());
 
 		aggregator.addInputListener(tableview);
 		

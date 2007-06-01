@@ -18,7 +18,7 @@ public class TableStrokeHandler extends TableInputHandler {
 
 	Page lastPage = null;
 	Path2D stroke = null;
-	float lastX,lastY;
+	double lastX,lastY;
 	List<Page> pages = new LinkedList<Page>();
 	
 	
@@ -34,7 +34,7 @@ public class TableStrokeHandler extends TableInputHandler {
 
 	/** @see TableInputHandler#inputPoint(float,float,Page,List,PointEvent) */
 	@Override
-	public void inputPoint(float x, float y, Page page, List<Page> activePages, PointEvent e) {
+	public void inputPoint(double x, double y, Page page, List<Page> activePages, PointEvent e) {
 
 		// input type?
 		switch (e.getType()) {
@@ -44,7 +44,7 @@ public class TableStrokeHandler extends TableInputHandler {
 				if (page!=null) {
 					add(page);
 					page.startStroke(x,y);
-					page.addConstraint(this, new Point2D.Float(x,y));
+					page.addConstraint(this, new Point2D.Double(x,y));
 				}
 				break;
 			case RELEASE:
@@ -65,7 +65,7 @@ public class TableStrokeHandler extends TableInputHandler {
 					}
 					if (page!=null) {
 						page.startStroke(x,y);
-						page.moveConstraint(this, new Point2D.Float(x,y));
+						page.moveConstraint(this, new Point2D.Double(x,y));
 					}
 				}
 				if (page!=null) {
@@ -83,21 +83,21 @@ public class TableStrokeHandler extends TableInputHandler {
 		lastY = y;
 	}
 
-	void startStroke(float x, float y) {
-		stroke = new Path2D.Float();
+	private void startStroke(double x, double y) {
+		stroke = new Path2D.Double();
 		stroke.moveTo(x, y);
 	}
-	void addStroke(float x, float y) {
+	private void addStroke(double x, double y) {
 		stroke.lineTo(x, y);
 		Rectangle r = new Rectangle((int)x,(int)y);
 		r.add((int)lastX,(int)lastY);;
 		getView().repaint(r);
 	}
-	void add(Page p) {
+	private void add(Page p) {
 		pages.add(p);
 		p.setActive(true);
 	}
-	void reset() {
+	private void reset() {
 		if (stroke!=null)
 			getView().repaint(stroke.getBounds());
 		lastPage = null;

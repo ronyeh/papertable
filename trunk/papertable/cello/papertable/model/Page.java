@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
@@ -56,10 +57,10 @@ public class Page {
 	 * @param sx
 	 * @param sy
 	 */
-	public synchronized void startStroke(float sx, float sy) {
+	public synchronized void startStroke(double sx, double sy) {
 		endStroke();
-		activeStroke = new Path2D.Float();
-		Point2D transformed = reverseTransform(new Point2D.Float(sx,sy));
+		activeStroke = new Path2D.Double();
+		Point2D transformed = reverseTransform(new Point2D.Double(sx,sy));
 		activeStroke.moveTo(transformed.getX(), transformed.getY());
 	}
 	/**
@@ -67,8 +68,8 @@ public class Page {
 	 * @param sx
 	 * @param sy
 	 */
-	public synchronized void addStroke(float sx, float sy) {
-		Point2D transformed = reverseTransform(new Point2D.Float(sx,sy));
+	public synchronized void addStroke(double sx, double sy) {
+		Point2D transformed = reverseTransform(new Point2D.Double(sx,sy));
 		activeStroke.lineTo(transformed.getX(), transformed.getY());
 	}
 	/**
@@ -126,6 +127,9 @@ public class Page {
 		paintOverlay(g);
 
 		g.setTransform(saveXform);
+
+		for (Point2D p : constraints.values())
+			g.draw(new Ellipse2D.Double(p.getX()-5,p.getY()-5,10,10));
 	}
 	
 	/**
@@ -154,6 +158,7 @@ public class Page {
 		if (activeStroke!=null)
 			g.draw(activeStroke);
 		g.setStroke(oldStroke);
+		
 
 		g.setColor(Color.WHITE);
 		for (Shape s : annotations)
@@ -232,6 +237,7 @@ public class Page {
 		if (constraints.size()>=2)
 			return;
 		constraints.put(source,constraint);
+		invokePageChanged();
 	}
 	
 	/**
@@ -240,6 +246,7 @@ public class Page {
 	 */
 	public void removeConstraint(Object source) {
 		constraints.remove(source);
+		invokePageChanged();
 	}
 	/**
 	 * Moves an existing constraint to a new point transforming the underlying 
@@ -283,6 +290,7 @@ public class Page {
 				
 				break;
 		}
+		invokePageChanged();
 	}
 	/**
 	 * Moves an existing constraint to a new point
