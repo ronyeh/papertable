@@ -39,11 +39,11 @@ public abstract class TableInputHandler {
 	 */
 	public void inputPoint(PointEvent e) {
 
-		float x = e.getX() * view.getTable().getWidth();
-		float y = e.getY() * view.getTable().getHeight();
+		double x = e.getX() * view.getTable().getWidth();
+		double y = e.getY() * view.getTable().getHeight();
 
 
-		List<Page> pages = view.getTable().getPages( new Rectangle2D.Float(x, y, 1, 1));
+		List<Page> pages = view.getTable().getPages( new Rectangle2D.Double(x, y, 1, 1));
 		
 		Page page = null;
 		if (pages.size() > 0)
@@ -68,7 +68,7 @@ public abstract class TableInputHandler {
 	 * @param pages
 	 * @param e
 	 */
-	protected abstract void inputPoint(float x, float y, Page page, 
+	protected abstract void inputPoint(double x, double y, Page page, 
 			List<Page> pages, PointEvent e);
 	/**
 	 * Paints the input feedback (if necessary)

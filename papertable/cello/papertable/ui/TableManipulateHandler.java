@@ -20,7 +20,7 @@ public class TableManipulateHandler extends TableInputHandler {
 	 * @see TableInputHandler#inputPoint(float, float, Page, List, PointEvent)
 	 */
 	@Override
-	protected void inputPoint(float x, float y, Page page, List<Page> pages,
+	protected void inputPoint(double x, double y, Page page, List<Page> pages,
 			PointEvent e) {
 
 		// input type?
@@ -31,7 +31,7 @@ public class TableManipulateHandler extends TableInputHandler {
 				if (activePage != null) {
 					activePage.setActive(true);
 					getView().getTable().bringToTop(activePage);
-					activePage.addConstraint(this, new Point2D.Float(x,y));
+					activePage.addConstraint(this, new Point2D.Double(x,y));
 				}
 				
 				break;
@@ -43,8 +43,7 @@ public class TableManipulateHandler extends TableInputHandler {
 				break;
 			case DRAG:
 				if (activePage != null) {
-					activePage.moveConstraint(this, 
-							new Point2D.Float(x,y));
+					activePage.moveConstraint(this, new Point2D.Double(x,y));
 				}
 				break;
 			default:

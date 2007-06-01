@@ -10,7 +10,7 @@ import java.util.EventObject;
 public class PointEvent extends EventObject {
 
 	private static final long serialVersionUID = -197277793111705069L;
-	private float x,y,radius,pressure;
+	private double x,y,radius,pressure;
 	private Type type;
 	private boolean consumed = false;
 	
@@ -34,8 +34,8 @@ public class PointEvent extends EventObject {
 	 * @param x
 	 * @param y
 	 */
-	public PointEvent(Object source, Type type, float x, float y) {
-		this(source,type,x,y,1.0f,1.0f);
+	public PointEvent(Object source, Type type, double x, double y) {
+		this(source,type,x,y,1.0,1.0);
 	}
 	/**
 	 * @param source
@@ -45,9 +45,9 @@ public class PointEvent extends EventObject {
 	 * @param radius
 	 * @param pressure
 	 */
-	public PointEvent(Object source, Type type, float x, float y,
-					float pressure) {
-		this(source,type,x,y,pressure,1.0f);
+	public PointEvent(Object source, Type type, double x, double y,
+					double pressure) {
+		this(source,type,x,y,pressure,1.0);
 	}
 
 	/**
@@ -58,8 +58,8 @@ public class PointEvent extends EventObject {
 	 * @param radius
 	 * @param pressure
 	 */
-	public PointEvent(Object source, Type type, float x, float y, 
-			float pressure, float radius) {
+	public PointEvent(Object source, Type type, double x, double y, 
+			double pressure, double radius) {
 		super(source);
 		this.type = type;
 		this.x = x;
@@ -77,28 +77,28 @@ public class PointEvent extends EventObject {
 	/**
 	 * @return the pressure (0-1)
 	 */
-	public float getPressure() {
+	public double getPressure() {
 		return pressure;
 	}
 
 	/**
 	 * @return the radius
 	 */
-	public float getRadius() {
+	public double getRadius() {
 		return radius;
 	}
 
 	/**
 	 * @return the x position
 	 */
-	public float getX() {
+	public double getX() {
 		return x;
 	}
 
 	/**
 	 * @return the y position
 	 */
-	public float getY() {
+	public double getY() {
 		return y;
 	}
 
