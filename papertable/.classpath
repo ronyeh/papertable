@@ -3,11 +3,7 @@
 	<classpathentry kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/diamondspin.jar" sourcepath="C:/Users/Marcello/Documents/_stanford/ronyeh/diamondspin/src"/>
-	<classpathentry kind="lib" path="lib/diamondtouch.jar" sourcepath="C:/Users/Marcello/Documents/_stanford/ronyeh/diamondtouch/src">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="papertable/dll"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="lib" path="lib/diamondtouch.jar" sourcepath="C:/Users/Marcello/Documents/_stanford/ronyeh/diamondtouch/src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/PaperToolkit"/>
 	<classpathentry kind="output" path=""/>
 </classpath>

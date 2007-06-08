@@ -15,41 +15,41 @@ package cello.papertable.dt;
  */
 public class DTSpan {
 
-	private int start;
-	private int stop;
-	private int max;
+	private double start;
+	private double stop;
+	private double peak;
 
 	/**
 	 * Constructs a new DTSpan
 	 * @param start
 	 * @param stop
-	 * @param max
+	 * @param peak
 	 */
-	public DTSpan(int start, int stop, int max) {
+	public DTSpan(double start, double stop, double peak) {
 		this.start = start;
 		this.stop = stop;
-		this.max = max;
+		this.peak = peak;
 	}
 
 	/**
 	 * @return start position
 	 */
-	public int getStart() {
+	public double getStart() {
 		return start;
 	}
 
 	/**
 	 * @return stop position
 	 */
-	public int getStop() {
+	public double getStop() {
 		return stop;
 	}
 
 	/**
 	 * @return max/peak position
 	 */
-	public int getMax() {
-		return max;
+	public double getPeak() {
+		return peak;
 	}
 	
 	/**
@@ -57,6 +57,6 @@ public class DTSpan {
 	 */
 	@Override
 	public String toString() {
-		return "DTSpan["+start + "," +max+","+ stop+"]";
+		return "DTSpan["+(int)(start*100) + "," +(int)(peak*100)+","+ (int)(stop*100)+"]";
 	}
 }

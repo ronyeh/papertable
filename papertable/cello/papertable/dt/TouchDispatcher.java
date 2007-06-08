@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.merl.diamondtouch.DtioDeviceId;
 import com.merl.diamondtouch.DtlibDevice;
+import com.merl.diamondtouch.DtlibException;
 import com.merl.diamondtouch.DtlibInputTouch;
 import com.merl.diamondtouch.DtlibSegment;
 
@@ -57,11 +58,15 @@ public class TouchDispatcher implements Runnable {
 	 */
 	@Override
 	public void run() {
-		initialize();
+		try {
+			initialize();
 
-		while (running) {
-			pollTable();
-			Thread.yield();
+			while (running) {
+				pollTable();
+				Thread.yield();
+			}
+		} catch (DtlibException ex) {
+			ex.printStackTrace();
 		}
 	}
 
@@ -74,57 +79,50 @@ public class TouchDispatcher implements Runnable {
 	}
 
 	private void initialize() {
-		try {
-			// Get device ids for known devices.
-			long[] deviceIds = DtlibDevice.getDeviceIds();
+		// Get device ids for known devices.
+		long[] deviceIds = DtlibDevice.getDeviceIds();
 
-			// Find an available device.
-			boolean found = false;
-			System.out.println("Devices:");
-			for (int k = 0; k < deviceIds.length; k++) {
-				System.out.println("    " + DtioDeviceId.toString(deviceIds[k]));
-				if (!found) {
-					device = DtlibDevice.getDevice(deviceIds[k]);
-					if (device.getStatus() != DtlibDevice.STATUS_UNAVAILABLE)
-						found = true;
-				}
-			}
+		// Find an available device.
+		boolean found = false;
+		System.out.println("Devices:");
+		for (int k = 0; k < deviceIds.length; k++) {
+			System.out.println("    " + DtioDeviceId.toString(deviceIds[k]));
 			if (!found) {
-				System.out.println("JdtTest.runapp: no device");
-				return;
+				device = DtlibDevice.getDevice(deviceIds[k]);
+				if (device.getStatus() != DtlibDevice.STATUS_UNAVAILABLE)
+					found = true;
 			}
-			System.out.println("JdtTest.runapp: using device " + 
-					DtioDeviceId.toString(device.getId()));
-
-			// Do automatic coordinate transformation
-			device.setApplyTransform(true);
-			
-			// We want to read DtlibInputTouch objects.
-			if (device.start(DtlibInputTouch.getClassInputclass()) != 0)
-				System.err.println("JdtTest.runapp: start failed");
-
-
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
+		if (!found)
+			throw new RuntimeException("Could not find DiamondTouch");
+		System.out.println("Using DiamondTouch device " + 
+				DtioDeviceId.toString(device.getId()));
+
+		// Do automatic coordinate transformation
+		device.setApplyTransform(true);
+		
+		// We want to read DtlibInputTouch objects.
+		if (device.start(DtlibInputTouch.getClassInputclass()) != 0)
+			System.err.println("JdtTest.runapp: start failed");
+
+
 	}
 
-	private void pollTable() {
+	private void pollTable() throws DtlibException {
 		// We know that we're reading DtlibInputTouch objects.
 		DtlibInputTouch[] inputs = null;
 		
-		try {
-			inputs = (DtlibInputTouch[]) device.read();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
+		inputs = (DtlibInputTouch[]) device.read();
 
 		if (inputs == null) {
 			// Does this even happen?
 			System.err.println("input error (Does this happen?)");
 			return;
 		}
+		
+
+		final double MAX_X = 2048;
+		final double MAX_Y = 1536;
 
 		// for each user (four)
 		for (int user = 0; user < inputs.length; user++) {
@@ -134,15 +132,11 @@ public class TouchDispatcher implements Runnable {
 							 ySpans = new ArrayList<DTSpan>();
 				
 				for (DtlibSegment x : input.getXSegments())
-					xSpans.add(new DTSpan(x.startPos,x.stopPos,x.maxSignalPos));
+					xSpans.add(new DTSpan(x.startPos/MAX_X,x.stopPos/MAX_X,x.maxSignalPos/MAX_X));
 				
 				for (DtlibSegment y : input.getYSegments())
-					ySpans.add(new DTSpan(y.startPos,y.stopPos,y.maxSignalPos));
+					ySpans.add(new DTSpan(y.startPos/MAX_Y,y.stopPos/MAX_Y,y.maxSignalPos/MAX_Y));
 
-				// You can wait for garbage collection, but...
-				// [is this even necessary? -Marcello]
-				input.free();
-				
 				// Get type
 				TouchEvent.Type type = TouchEvent.Type.NONE;
 				switch (input.getType()) {
@@ -161,6 +155,11 @@ public class TouchDispatcher implements Runnable {
 
 				for (TouchListener listener : listeners)
 					listener.handleTouch(ev);
+
+				// You can wait for garbage collection, but...
+				// [is this even necessary? -Marcello]
+				input.free();
+				
 			}
 		}
 
