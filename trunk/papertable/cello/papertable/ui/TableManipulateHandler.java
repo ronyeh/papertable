@@ -31,19 +31,18 @@ public class TableManipulateHandler extends TableInputHandler {
 				if (activePage != null) {
 					activePage.setActive(true);
 					getView().getTable().bringToTop(activePage);
-					activePage.addConstraint(this, new Point2D.Double(x,y));
+					activePage.addConstraint(e.getSource(), new Point2D.Double(x,y));
 				}
 				
 				break;
 			case RELEASE:
 				if (activePage != null) {
-					activePage.setActive(false);
-					activePage.removeConstraint(this);
+					activePage.removeConstraint(e.getSource());
 				}
 				break;
 			case DRAG:
 				if (activePage != null) {
-					activePage.moveConstraint(this, new Point2D.Double(x,y));
+					activePage.moveConstraint(e.getSource(), new Point2D.Double(x,y));
 				}
 				break;
 			default:
@@ -51,5 +50,6 @@ public class TableManipulateHandler extends TableInputHandler {
 		}
 
 	}
+	
 
 }

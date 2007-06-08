@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.swing.JComponent;
 
+import cello.papertable.event.EventSource;
 import cello.papertable.event.InputListener;
 import cello.papertable.event.PageEvent;
 import cello.papertable.event.PointEvent;
@@ -61,6 +62,8 @@ public class TableView extends JComponent
 		Graphics2D g2d = (Graphics2D)g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 								RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+								RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		table.draw(g2d);
 		for (TableInputHandler handler : inputHandlers.values())
 			handler.paint(g2d);
@@ -108,7 +111,10 @@ public class TableView extends JComponent
 	
 	/** @see InputListener#inputPoint(PointEvent) */
 	public void inputPoint(PointEvent e) {
-		TableInputHandler handler = inputHandlers.get(e.getSource());
+		Object source = e.getSource();
+		if (source instanceof EventSource)
+			source = ((EventSource)source).getParentSource();
+		TableInputHandler handler = inputHandlers.get(source);
 		
 		if (handler!=null)
 			handler.inputPoint(e);

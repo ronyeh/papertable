@@ -35,8 +35,8 @@ public class TouchEvent {
 		super();
 		this.user = user;
 		this.type = type;
-		this.xSpans = ySpans;
-		this.ySpans = xSpans;
+		this.xSpans = xSpans;
+		this.ySpans = ySpans;
 	}
 	/**
 	 * @return the type
@@ -63,5 +63,12 @@ public class TouchEvent {
 		return ySpans;
 	}
 	
+	/**
+	 * @see Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "TouchEvent["+user+","+type+","+xSpans+","+ySpans+"]";
+	}
 	
 }

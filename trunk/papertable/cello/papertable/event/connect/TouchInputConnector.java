@@ -11,6 +11,7 @@ import cello.papertable.dt.DTSpan;
 import cello.papertable.dt.TouchDispatcher;
 import cello.papertable.dt.TouchEvent;
 import cello.papertable.dt.TouchListener;
+import cello.papertable.event.EventSource;
 import cello.papertable.event.InputListener;
 import cello.papertable.event.PointEvent;
 
@@ -34,7 +35,7 @@ public class TouchInputConnector implements TouchListener {
 		dispatcher.addTouchListener(this);
 	}
 	
-	private double threshold = 50;
+	private double threshold = 0.05;
 	
 	private InputListener listener = null;
 
@@ -48,12 +49,26 @@ public class TouchInputConnector implements TouchListener {
 			this.user = user;
 		}
 		
+		int touchid = 0;
 		
-		class TouchPoint {
+		class TouchPoint implements EventSource {
 			double x,y;
+			int id;
 			TouchPoint(double x, double y) {
 				this.x = x;
 				this.y = y;
+				this.id = touchid++;
+			}
+			/**
+			 * @see EventSource#getParentSource()
+			 */
+			@Override
+			public Object getParentSource() {
+				return TouchInputConnector.this;
+			}
+			@Override
+			public String toString() {
+				return touchid+"-"+user+" touch["+x+","+y+"]";
 			}
 		}
 		
@@ -76,16 +91,14 @@ public class TouchInputConnector implements TouchListener {
 			List<TouchPoint> unmodifiedTouches 
 					= new LinkedList<TouchPoint>(touches);
 			
-			List<DTSpan> xspans = new ArrayList<DTSpan>();
-			List<DTSpan> yspans = new ArrayList<DTSpan>();
+			List<DTSpan> xspans = new ArrayList<DTSpan>(e.getXSpans());
+			List<DTSpan> yspans = new ArrayList<DTSpan>(e.getYSpans());
 			
 			// Loop through all pairs of x and y spans
 			for (DTSpan yspan : e.getYSpans()) {
-				boolean yused = false;
-				double centery = yspan.getMax();
+				double centery = yspan.getPeak();
 				for (DTSpan xspan : e.getXSpans()) {
-					boolean xused = false;
-					double centerx = xspan.getMax();
+					double centerx = xspan.getPeak();
 
 					for (TouchPoint touch : touches) {
 						double d = Math.hypot(centerx-touch.x, centery-touch.y);
@@ -93,40 +106,58 @@ public class TouchInputConnector implements TouchListener {
 						if (d<=threshold) {
 							touch.x = centerx;
 							touch.y = centery;
-							listener.inputPoint(new PointEvent(TouchInputConnector.this,
+							listener.inputPoint(new PointEvent(touch,
 									PointEvent.Type.DRAG,touch.x,touch.y));
 							unmodifiedTouches.remove(touch);
-							xused = yused = true;
+							xspans.remove(xspan);
+							yspans.remove(yspan);
 							break;
 						}
 					}
-					if (!xused)
-						xspans.add(xspan);
 				}
-				if (!yused)
-					yspans.add(yspan);
 			}
 
 
-			
+			TouchPoint touch;
 			switch (e.getType()) {
 				case DOWN:
 					// Just get the first (remaining) possibility
-					TouchPoint touch = new TouchPoint(xspans.get(0).getMax(),
-													  yspans.get(0).getMax());
+					touch = new TouchPoint(xspans.get(0).getPeak(),
+										   yspans.get(0).getPeak());
 					touches.add(touch);
-					listener.inputPoint(new PointEvent(TouchInputConnector.this, 
+					System.out.println(touches.size()+" add "+touch);
+					listener.inputPoint(new PointEvent(touch, 
 							PointEvent.Type.PRESS, touch.x, touch.y));
 					break;
 				case UP:
+					for (TouchPoint t : touches) {
+						System.out.println(touches.size()+" remove "+t);
+						listener.inputPoint(new PointEvent(t,
+								PointEvent.Type.RELEASE,t.x,t.y));
+						touchid--;
+					}
+					touches.clear();
+					break;
+				default:
 					// Find non-updated points
 					for (TouchPoint t : unmodifiedTouches) {
 						touches.remove(t);
-						listener.inputPoint(new PointEvent(TouchInputConnector.this,
+						System.out.println(touches.size()+" remove "+t);
+						listener.inputPoint(new PointEvent(t,
 								PointEvent.Type.RELEASE,t.x,t.y));
+						touchid--;
 					}
-					break;
-				default:
+					// Look for new points
+					if (xspans.size()>0 && yspans.size()>0 && 
+							touches.size()==1) {
+						touch = new TouchPoint(xspans.get(0).getPeak(),
+								  			   yspans.get(0).getPeak());
+						touches.add(touch);
+						System.out.println(touches.size()+" add "+touch);
+						
+						listener.inputPoint(new PointEvent(touch, 
+							PointEvent.Type.PRESS, touch.x, touch.y));
+					}
 					break;
 			}
 		}

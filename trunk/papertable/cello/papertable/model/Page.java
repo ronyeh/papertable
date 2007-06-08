@@ -150,15 +150,16 @@ public class Page {
 	protected synchronized void paintOverlay(Graphics2D g) {
 		
 		Stroke oldStroke = g.getStroke();
-		
-		g.setStroke(new BasicStroke(4));
+		g.setStroke(new BasicStroke(3,BasicStroke.CAP_ROUND,
+				BasicStroke.JOIN_ROUND));
 		g.setColor(Color.BLACK);
 		for (Shape s : annotations)
 			g.draw(s);
 		if (activeStroke!=null)
 			g.draw(activeStroke);
-		g.setStroke(oldStroke);
-		
+
+		g.setStroke(new BasicStroke(1,BasicStroke.CAP_ROUND,
+				BasicStroke.JOIN_ROUND));
 
 		g.setColor(Color.WHITE);
 		for (Shape s : annotations)
@@ -171,6 +172,7 @@ public class Page {
 			g.setColor(Color.WHITE);
 			g.draw(s);
 		}
+		g.setStroke(oldStroke);
 		
 	}
 
@@ -237,6 +239,7 @@ public class Page {
 		if (constraints.size()>=2)
 			return;
 		constraints.put(source,constraint);
+		System.out.println("add constraint:"+source+"\n\t"+constraint);
 		invokePageChanged();
 	}
 	
@@ -246,6 +249,7 @@ public class Page {
 	 */
 	public void removeConstraint(Object source) {
 		constraints.remove(source);
+		System.out.println("remove constraint:"+source);
 		invokePageChanged();
 	}
 	/**

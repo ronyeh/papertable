@@ -11,11 +11,17 @@ import javax.swing.JFrame;
 import cello.papertable.dt.TouchDispatcher;
 import cello.papertable.event.InputAggregator;
 import cello.papertable.event.connect.MouseInputConnector;
-import cello.papertable.event.connect.PenInputConnector;
+import cello.papertable.event.connect.PenRegionInputConnector;
 import cello.papertable.event.connect.TouchInputConnector;
 import cello.papertable.model.PhotoPage;
 import cello.papertable.model.Table;
+import edu.stanford.hci.r3.PaperToolkit;
+import edu.stanford.hci.r3.application.Application;
+import edu.stanford.hci.r3.paper.Region;
+import edu.stanford.hci.r3.paper.Sheet;
+import edu.stanford.hci.r3.paper.regions.TextRegion;
 import edu.stanford.hci.r3.pen.Pen;
+import edu.stanford.hci.r3.units.Centimeters;
 
 /**
  * Main GUI window
@@ -40,6 +46,7 @@ public class MainFrame extends JFrame {
 		super("Papertable");
 		setUndecorated(true);
 		setSize(1024,768);
+		setLocation(1400,0);
 		
 		table = new Table(1024,768);
 		aggregator = new InputAggregator();
@@ -71,9 +78,32 @@ public class MainFrame extends JFrame {
 		TouchDispatcher dispatcher = new TouchDispatcher();
 		dispatcher.start();
 		
-		MouseInputConnector mouseinput = new MouseInputConnector(tableview, aggregator);
-		PenInputConnector peninput = new PenInputConnector(p, aggregator);
-		TouchInputConnector touchinput = new TouchInputConnector(dispatcher, aggregator);
+		MouseInputConnector mouseinput = new MouseInputConnector(tableview, 
+				aggregator);
+		
+
+		Centimeters centimeters = new Centimeters();
+		Sheet surface = new Sheet(65.5, 49.3, centimeters);
+		Region textRegion = new TextRegion("Top Left", 0, 0);
+		surface.addRegion(textRegion);
+		Region mainRegion = new Region("Main Region", 0, 0, 66, 49.6, 
+				centimeters);
+
+		PenRegionInputConnector peninput = new PenRegionInputConnector(mainRegion, 
+				aggregator);
+		
+		surface.addRegion(mainRegion);
+		
+		
+		Application app = new Application("DiamondTouchTableTop");
+		app.addSheet(surface, new File("data/DiamondTouch.patternInfo.xml"));
+
+		PaperToolkit.runApplication(app);
+		
+		
+		
+		TouchInputConnector touchinput = new TouchInputConnector(dispatcher, 
+				aggregator);
 		
 		tableview.setHandler(mouseinput, new TableManipulateHandler());
 		tableview.setHandler(peninput, new TableStrokeHandler());
