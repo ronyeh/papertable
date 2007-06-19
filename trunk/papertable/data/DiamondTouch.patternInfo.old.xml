@@ -20,7 +20,7 @@
       </width>
     </RegionID>
     <TiledPatternCoordinateConverter>
-      <bottomMostVoidSpaceInDots>199</bottomMostVoidSpaceInDots>
+      <bottomMostVoidSpaceInDots>189</bottomMostVoidSpaceInDots>
       <clipH>1675.464566929134</clipH>
       <clipW>2229.448818897638</clipW>
       <clipX>0.0</clipX>
@@ -28,27 +28,27 @@
       <dotsPerTileHorizontal>721</dotsPerTileHorizontal>
       <dotsPerTileVertical>932</dotsPerTileVertical>
       <hasClippingBounds>true</hasClippingBounds>
-      <maxX>1.84032387E8</maxX>
-      <maxY>7920.0</maxY>
+      <maxX>1.84032403E8</maxX>
+      <maxY>7930.0</maxY>
       <numDotsHorizontalBetweenTiles>1330.0</numDotsHorizontalBetweenTiles>
       <numDotsVerticalBetweenTiles>0.0</numDotsVerticalBetweenTiles>
       <numTiles>8</numTiles>
       <numTilesAcross>4</numTilesAcross>
       <numTilesDown>2</numTilesDown>
-      <numTotalDotsAcross>2213.0</numTotalDotsAcross>
+      <numTotalDotsAcross>2229.0</numTotalDotsAcross>
       <numTotalDotsAcrossObj>
         <unitName>PatternDots</unitName>
-        <value>2213.0</value>
+        <value>2229.0</value>
       </numTotalDotsAcrossObj>
-      <numTotalDotsDown>1665.0</numTotalDotsDown>
+      <numTotalDotsDown>1675.0</numTotalDotsDown>
       <numTotalDotsDownObj>
         <unitName>PatternDots</unitName>
-        <value>1665.0</value>
+        <value>1675.0</value>
       </numTotalDotsDownObj>
       <originX>1.84022418E8</originX>
       <originY>7187.0</originY>
       <regionName>Main Region</regionName>
-      <rightMostVoidSpaceInDots>671</rightMostVoidSpaceInDots>
+      <rightMostVoidSpaceInDots>655</rightMostVoidSpaceInDots>
       <startingTile>0</startingTile>
       <tileHeightIncludingPadding>932.0</tileHeightIncludingPadding>
       <tileWidthIncludingPadding>1330.0</tileWidthIncludingPadding>
