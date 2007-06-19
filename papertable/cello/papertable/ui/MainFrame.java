@@ -45,10 +45,14 @@ public class MainFrame extends JFrame {
 	public MainFrame() {
 		super("Papertable");
 		setUndecorated(true);
-		setSize(1024,768);
-		setLocation(1400,0);
 		
-		table = new Table(1024,768);
+		int widthTable = 1280;
+		int heightTable = 1024;
+		
+		setSize(widthTable,heightTable);
+		setLocation(1920,0);
+		
+		table = new Table(widthTable,heightTable);
 		aggregator = new InputAggregator();
 		
 		float x = 10; 
