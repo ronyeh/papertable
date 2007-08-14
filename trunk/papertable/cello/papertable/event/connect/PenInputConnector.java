@@ -1,10 +1,10 @@
 package cello.papertable.event.connect;
 
+import papertoolkit.pen.Pen;
+import papertoolkit.pen.PenSample;
+import papertoolkit.pen.streaming.listeners.PenListener;
 import cello.papertable.event.InputListener;
 import cello.papertable.event.PointEvent;
-import edu.stanford.hci.r3.pen.Pen;
-import edu.stanford.hci.r3.pen.PenSample;
-import edu.stanford.hci.r3.pen.streaming.listeners.PenListener;
 
 /**
  * Connects Pen input to an InputListener 

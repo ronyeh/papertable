@@ -1,13 +1,13 @@
 package cello.papertable.event.connect;
 
+import papertoolkit.events.EventHandler;
+import papertoolkit.events.PenEvent;
+import papertoolkit.paper.Region;
+import papertoolkit.pen.PenSample;
+import papertoolkit.pen.streaming.listeners.PenListener;
+import papertoolkit.units.coordinates.PercentageCoordinates;
 import cello.papertable.event.InputListener;
 import cello.papertable.event.PointEvent;
-import edu.stanford.hci.r3.events.EventHandler;
-import edu.stanford.hci.r3.events.PenEvent;
-import edu.stanford.hci.r3.paper.Region;
-import edu.stanford.hci.r3.pen.PenSample;
-import edu.stanford.hci.r3.pen.streaming.listeners.PenListener;
-import edu.stanford.hci.r3.units.coordinates.PercentageCoordinates;
 
 /**
  * Connects Pen input region to an InputListener 
