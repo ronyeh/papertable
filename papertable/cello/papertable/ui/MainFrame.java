@@ -8,6 +8,14 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
+import papertoolkit.PaperToolkit;
+import papertoolkit.application.Application;
+import papertoolkit.paper.Region;
+import papertoolkit.paper.Sheet;
+import papertoolkit.paper.regions.TextRegion;
+import papertoolkit.pen.Pen;
+import papertoolkit.units.Centimeters;
+
 import cello.papertable.dt.TouchDispatcher;
 import cello.papertable.event.InputAggregator;
 import cello.papertable.event.connect.MouseInputConnector;
@@ -15,13 +23,6 @@ import cello.papertable.event.connect.PenRegionInputConnector;
 import cello.papertable.event.connect.TouchInputConnector;
 import cello.papertable.model.PhotoPage;
 import cello.papertable.model.Table;
-import edu.stanford.hci.r3.PaperToolkit;
-import edu.stanford.hci.r3.application.Application;
-import edu.stanford.hci.r3.paper.Region;
-import edu.stanford.hci.r3.paper.Sheet;
-import edu.stanford.hci.r3.paper.regions.TextRegion;
-import edu.stanford.hci.r3.pen.Pen;
-import edu.stanford.hci.r3.units.Centimeters;
 
 /**
  * Main GUI window
